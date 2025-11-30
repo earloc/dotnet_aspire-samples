@@ -4,16 +4,6 @@ using Azure.Provisioning.Storage;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-foreach(var arg in args)
-{
-    Console.WriteLine($"Arg: {arg}");
-}
-
-foreach (var env in Environment.GetEnvironmentVariables())
-{
-    Console.WriteLine($"Env: {env}");
-}
-
 builder.AddAzureContainerAppEnvironment("env");
 
 var storage = builder.AddAzureStorage("storage").RunAsEmulator()
@@ -37,8 +27,16 @@ var blobs = storage.AddBlobs("blobs");
 var queues = storage.AddQueues("queues");
 
 var functionsImageBuilder = default(IResourceBuilder<ExecutableResource>);
-var isWatchModeEnabled = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH_ITERATION"));
-if (isWatchModeEnabled)
+
+
+// infer, if we are running in watch-mode
+// those two seem to be a good default (at time of writing)
+// in the end, might be better to be more explicit, by e.g. setting a custom env-variable or cli-arg
+// for the sake of this demo, inferal seems "good enough""
+var isWatchModeEnabled = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH_ITERATION")); // seems to be set (to "1"), whenever we run as `dotnet watch`
+var isAspireRunMode = Environment.GetEnvironmentVariable("ASPIRE_EXTENSION_DEBUG_RUN_MODE") == "Debug"; // seems to be set, whenever we run via vs-code aspire extension (`Aspire: Debug`)
+
+if (isWatchModeEnabled == isAspireRunMode)
 {
     functionsImageBuilder = builder
         .AddExecutable
@@ -73,7 +71,7 @@ var functions = functionsImageBuilder is null
     .WaitFor(storage)
     .WithEnvironment(env =>
     {
-        // `AzureStorageReosource` explicitly implements `IResourceWithAzureFunctionsConfig`
+        // `AzureStorageReosource` explicitly implements `IResourceWithAzureFunctionsConfig`, which applies the needed values to the container-environment
         ((IResourceWithAzureFunctionsConfig)storage.Resource).ApplyAzureFunctionsConfiguration(env.EnvironmentVariables, "AzureWebJobsStorage");
     })
 ;
