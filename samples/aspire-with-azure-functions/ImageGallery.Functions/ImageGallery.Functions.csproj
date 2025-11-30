@@ -7,6 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>2e65ed58-8002-4d2e-8a1d-05f1697ae419</UserSecretsId>
+    <!-- https://github.com/dotnet/sdk-container-builds/tree/main/docs -->
+    <ContainerBaseImage>mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated10.0</ContainerBaseImage>
+    <ContainerRepository>imagegallery/functions</ContainerRepository>
   </PropertyGroup>
 
   <ItemGroup>
