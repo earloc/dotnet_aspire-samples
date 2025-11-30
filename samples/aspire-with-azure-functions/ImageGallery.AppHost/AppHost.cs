@@ -29,14 +29,8 @@ var queues = storage.AddQueues("queues");
 var functionsImageBuilder = default(IResourceBuilder<ExecutableResource>);
 
 
-// infer, if we are running in watch-mode
-// those two seem to be a good default (at time of writing)
-// in the end, might be better to be more explicit, by e.g. setting a custom env-variable or cli-arg
-// for the sake of this demo, inferal seems "good enough""
-var isWatchModeEnabled = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH_ITERATION")); // seems to be set (to "1"), whenever we run as `dotnet watch`
-var isAspireRunMode = Environment.GetEnvironmentVariable("ASPIRE_EXTENSION_DEBUG_RUN_MODE") == "Debug"; // seems to be set, whenever we run via vs-code aspire extension (`Aspire: Debug`)
-
-if (isWatchModeEnabled == isAspireRunMode)
+var runWithWorkaround = args.Contains("--with-workaround");
+if (runWithWorkaround)
 {
     functionsImageBuilder = builder
         .AddExecutable
